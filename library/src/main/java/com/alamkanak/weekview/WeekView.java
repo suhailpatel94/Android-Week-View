@@ -696,7 +696,7 @@ public final class WeekView<T> extends View
      * and `pastBackgroundColor`.
      *
      * @param color True if past and future should have two different
-     *                                    background colors.
+     *              background colors.
      */
     public void setShowDistinctPastFutureColor(boolean color) {
         configWrapper.setShowDistinctPastFutureColor(color);
@@ -1266,6 +1266,14 @@ public final class WeekView<T> extends View
 
     public EventClickListener getEventClickListener() {
         return gestureHandler.getEventClickListener();
+    }
+
+    public void setOnEventDragListener(EventDragListener<T> listener) {
+        gestureHandler.setEventDragListener(listener);
+    }
+
+    public EventDragListener getEventDragListener() {
+        return gestureHandler.getEventDragListener();
     }
 
     @Nullable

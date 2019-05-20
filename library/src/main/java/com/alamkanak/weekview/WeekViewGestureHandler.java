@@ -1,6 +1,8 @@
 package com.alamkanak.weekview;
 
 import android.content.Context;
+import android.graphics.PointF;
+import android.os.CountDownTimer;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -11,6 +13,7 @@ import android.widget.OverScroller;
 
 import org.threeten.bp.ZonedDateTime;
 
+import java.util.Calendar;
 import java.util.List;
 
 import static android.view.KeyEvent.ACTION_UP;
@@ -48,12 +51,22 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     private EventClickListener<T> eventClickListener;
     private EventLongPressListener<T> eventLongPressListener;
+    private EventDragListener<T> eventDragListener;
 
     private EmptyViewClickListener emptyViewClickListener;
     private EmptyViewLongPressListener emptyViewLongPressListener;
 
     private WeekViewLoader<T> weekViewLoader;
     private ScrollListener scrollListener;
+
+
+    private boolean isDragging = false, longPressTimerCancelled = false, longPressTimerRunning = false;
+    private CountDownTimer longPressTimer = null;
+    private PointF dragStartPoint = new PointF();
+
+    Calendar drag_start_time = Calendar.getInstance();
+    boolean dragStartTimeSet = false;
+
 
     WeekViewGestureHandler(Context context, View view,
                            WeekViewConfigWrapper config, WeekViewCache<T> cache) {
@@ -277,6 +290,9 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         if (emptyViewLongPressListener != null
                 && e.getX() > timeColumnWidth && e.getY() > config.getHeaderHeight()) {
             final ZonedDateTime selectedTime = touchHandler.getTimeFromPoint(e);
+            if (getEventDragListener() != null)
+                isDragging = true;
+
             if (selectedTime != null) {
                 emptyViewLongPressListener.onEmptyViewLongPress(toCalendar(selectedTime));
             }
@@ -313,6 +329,15 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     void setEventLongPressListener(EventLongPressListener<T> eventLongPressListener) {
         this.eventLongPressListener = eventLongPressListener;
+    }
+
+
+    public EventDragListener<T> getEventDragListener() {
+        return eventDragListener;
+    }
+
+    public void setEventDragListener(EventDragListener<T> eventDragListener) {
+        this.eventDragListener = eventDragListener;
     }
 
     WeekViewLoader<T> getWeekViewLoader() {
@@ -393,6 +418,17 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         scaleDetector.onTouchEvent(event);
         final boolean val = gestureDetector.onTouchEvent(event);
 
+
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            if (isDragging) {
+                getEventDragListener().onDragOver();
+
+            }
+            dragOver();
+
+        }
+
+
         // Check after call of gestureDetector, so currentFlingDirection and currentScrollDirection are set
         if (event.getAction() == ACTION_UP && !isZooming && currentFlingDirection == Direction.NONE) {
             if (currentScrollDirection == Direction.RIGHT || currentScrollDirection == Direction.LEFT) {
@@ -400,6 +436,58 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             }
             currentScrollDirection = Direction.NONE;
         }
+
+
+        if (getEventDragListener() != null && event.getAction() == MotionEvent.ACTION_MOVE) {
+            //Check if user is actually longpressing, not slow-moving
+            // if current position differs much then press positon then discard whole thing
+            // If position change is minimal then after 0.5s that is a longpress. You can now process your other gestures
+
+            if (isDragging) {
+                //drag and show view
+                ZonedDateTime selectedTime = touchHandler.getTimeFromPoint(event);
+                if (selectedTime != null) {
+
+                    Calendar roundTime = roundOffTime(toCalendar(selectedTime));
+                    if (!dragStartTimeSet) {
+
+                        drag_start_time.setTimeInMillis(roundTime.getTimeInMillis());
+                        dragStartTimeSet = true;
+
+
+                    }
+
+                    if (drag_start_time.getTimeInMillis() == roundTime.getTimeInMillis()) {
+                        roundTime.add(Calendar.MINUTE, 30);
+
+                        getEventDragListener().onDragging(drag_start_time, roundTime);
+                    } else {
+                        if (drag_start_time.getTimeInMillis() < roundTime.getTimeInMillis()) {
+
+                            getEventDragListener().onDragging(drag_start_time, roundTime);
+                        } else {
+                            Calendar drag_start_temp = Calendar.getInstance();
+                            drag_start_temp.setTimeInMillis(drag_start_time.getTimeInMillis());
+                            drag_start_temp.add(Calendar.MINUTE, 30);
+                            getEventDragListener().onDragging(roundTime, drag_start_temp);
+                        }
+
+                    }
+
+
+                }
+
+
+//                scrollWhileDrag(event);
+
+            } else {
+
+//                handleLongPressManually(event);
+            }
+
+
+        }
+
 
         return val;
     }
@@ -437,7 +525,42 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     interface Listener {
         void onScaled();
+
         void onScrolled();
     }
+
+
+    private void dragOver() {
+
+        isDragging = false;
+        dragStartTimeSet = false;
+        removeLongPressTimer();
+
+    }
+
+    private void removeLongPressTimer() {
+
+        if (longPressTimer != null)
+            longPressTimer.cancel();
+
+        longPressTimer = null;
+        isDragging = false;
+        longPressTimerRunning = false;
+        longPressTimerCancelled = false;
+    }
+
+
+    public Calendar roundOffTime(Calendar cal) {
+
+
+        if (cal.get(Calendar.MINUTE) > 0 && cal.get(Calendar.MINUTE) <= 30) {
+            cal.set(Calendar.MINUTE, 0);
+        } else
+            cal.set(Calendar.MINUTE, 30);
+
+
+        return cal;
+    }
+
 
 }

@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.alamkanak.weekview.EmptyViewLongPressListener;
 import com.alamkanak.weekview.EventClickListener;
+import com.alamkanak.weekview.EventDragListener;
 import com.alamkanak.weekview.EventLongPressListener;
 import com.alamkanak.weekview.MonthChangeListener;
 import com.alamkanak.weekview.WeekView;
@@ -32,7 +33,7 @@ import java.util.Locale;
  */
 public class BaseActivity extends AppCompatActivity
         implements EventClickListener<Event>, MonthChangeListener<Event>,
-        EventLongPressListener<Event>, EmptyViewLongPressListener {
+        EventLongPressListener<Event>, EmptyViewLongPressListener, EventDragListener {
 
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
@@ -55,6 +56,7 @@ public class BaseActivity extends AppCompatActivity
         mWeekView.setMonthChangeListener(this);
         mWeekView.setEventLongPressListener(this);
         mWeekView.setEmptyViewLongPressListener(this);
+        mWeekView.setOnEventDragListener(this);
     }
 
     @Override
@@ -144,4 +146,19 @@ public class BaseActivity extends AppCompatActivity
         Toast.makeText(this, "Empty view long pressed: " + getEventTitle(time), Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onDragStart(Calendar start_cal) {
+
+    }
+
+
+    @Override
+    public void onDragOver() {
+
+    }
+
+    @Override
+    public void onDragging(@NotNull Calendar data, @NotNull Calendar data1) {
+
+    }
 }
