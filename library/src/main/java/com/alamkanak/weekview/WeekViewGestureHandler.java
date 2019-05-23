@@ -13,6 +13,7 @@ import android.widget.OverScroller;
 
 import org.threeten.bp.ZonedDateTime;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
@@ -62,11 +63,13 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     private boolean isDragging = false, longPressTimerCancelled = false, longPressTimerRunning = false;
     private CountDownTimer longPressTimer = null;
+
     private PointF dragStartPoint = new PointF();
 
     Calendar drag_start_time = Calendar.getInstance();
+    Calendar drag_end_time = Calendar.getInstance();
     boolean dragStartTimeSet = false;
-
+    private int roundOffTimeMinutes = 15;
 
     WeekViewGestureHandler(Context context, View view,
                            WeekViewConfigWrapper config, WeekViewCache<T> cache) {
@@ -448,31 +451,31 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             if (isDragging) {
                 //drag and show view
                 ZonedDateTime selectedTime = touchHandler.getTimeFromPoint(event);
+                Calendar selectedCal = Calendar.getInstance();
+                if (selectedTime != null)
+                    selectedCal = toCalendar(selectedTime);
+
                 if (selectedTime != null) {
 
-                    Calendar roundTime = roundOffTime(toCalendar(selectedTime));
+
                     if (!dragStartTimeSet) {
-
-                        drag_start_time.setTimeInMillis(roundTime.getTimeInMillis());
+                        drag_start_time.setTimeInMillis(roundOffTime(toCalendar(selectedTime), true).getTimeInMillis());
+                        drag_end_time.setTimeInMillis(roundOffTime(toCalendar(selectedTime), false).getTimeInMillis());
                         dragStartTimeSet = true;
-
-
                     }
 
-                    if (drag_start_time.getTimeInMillis() == roundTime.getTimeInMillis()) {
-                        roundTime.add(Calendar.MINUTE, 30);
-
-                        getEventDragListener().onDragging(drag_start_time, roundTime);
+                    if (isCloseToQuarter(drag_start_time, drag_end_time, selectedCal)) {
+                        getEventDragListener().onDragging(drag_start_time, drag_end_time);
                     } else {
-                        if (drag_start_time.getTimeInMillis() < roundTime.getTimeInMillis()) {
 
-                            getEventDragListener().onDragging(drag_start_time, roundTime);
+                        if (selectedCal.getTimeInMillis() > drag_end_time.getTimeInMillis()) {
+                            Calendar updated_end_time = roundOffTime(selectedCal, false);
+                            getEventDragListener().onDragging(drag_start_time, updated_end_time);
                         } else {
-                            Calendar drag_start_temp = Calendar.getInstance();
-                            drag_start_temp.setTimeInMillis(drag_start_time.getTimeInMillis());
-                            drag_start_temp.add(Calendar.MINUTE, 30);
-                            getEventDragListener().onDragging(roundTime, drag_start_temp);
+                            Calendar updated_start_time = roundOffTime(selectedCal, true);
+                            getEventDragListener().onDragging(updated_start_time, drag_end_time);
                         }
+
 
                     }
 
@@ -492,6 +495,19 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
 
         return val;
+    }
+
+    public String FORMAT_TIME = "HH:mm";
+
+    public String calendarToString(Calendar cal, String format_type) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat(format_type);
+        return sdf.format(cal.getTime());
+
+    }
+
+    private boolean isCloseToQuarter(Calendar start_cal, Calendar end_cal, Calendar selected_cal) {
+        return selected_cal.getTimeInMillis() >= start_cal.getTimeInMillis() && selected_cal.getTimeInMillis() < end_cal.getTimeInMillis();
     }
 
     void forceScrollFinished() {
@@ -552,14 +568,31 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
     }
 
 
-    public Calendar roundOffTime(Calendar cal) {
+    public Calendar roundOffTime(Calendar cal, boolean getNearestToStart) {
 
 
-        if (cal.get(Calendar.MINUTE) > 0 && cal.get(Calendar.MINUTE) <= 30) {
-            cal.set(Calendar.MINUTE, 0);
-        } else
-            cal.set(Calendar.MINUTE, 30);
+        if (cal.get(Calendar.MINUTE) >= 0 && cal.get(Calendar.MINUTE) <= 15) {
+            if (getNearestToStart)
+                cal.set(Calendar.MINUTE, 0);
+            else
+                cal.set(Calendar.MINUTE, 15);
 
+        } else if (cal.get(Calendar.MINUTE) > 15 && cal.get(Calendar.MINUTE) <= 30) {
+            if (getNearestToStart)
+                cal.set(Calendar.MINUTE, 15);
+            else
+                cal.set(Calendar.MINUTE, 30);
+        } else if (cal.get(Calendar.MINUTE) > 30 && cal.get(Calendar.MINUTE) <= 45) {
+            if (getNearestToStart)
+                cal.set(Calendar.MINUTE, 30);
+            else
+                cal.set(Calendar.MINUTE, 45);
+        } else if (cal.get(Calendar.MINUTE) > 45) {
+            if (getNearestToStart)
+                cal.set(Calendar.MINUTE, 45);
+            else
+                cal.set(Calendar.MINUTE, 60);
+        }
 
         return cal;
     }

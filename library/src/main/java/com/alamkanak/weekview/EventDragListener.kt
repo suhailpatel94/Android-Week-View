@@ -6,8 +6,7 @@ import java.util.*
 interface EventDragListener<T> {
 
 
-    fun onDragStart(data: Calendar)
-    fun onDragging(data: Calendar, data1: Calendar)
+    fun onDragging(cal_start: Calendar, cal_end: Calendar)
     fun onDragOver()
 
 }

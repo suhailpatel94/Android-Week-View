@@ -1,8 +1,10 @@
 package com.alamkanak.weekview.sample;
 
+import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -16,15 +18,19 @@ import com.alamkanak.weekview.EventLongPressListener;
 import com.alamkanak.weekview.MonthChangeListener;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewDisplayable;
+import com.alamkanak.weekview.WeekViewEvent;
 import com.alamkanak.weekview.sample.apiclient.Event;
 import com.alamkanak.weekview.sample.database.EventsDatabase;
 import com.alamkanak.weekview.sample.database.FakeEventsDatabase;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 /**
  * This is a base activity which contains week view and all the codes necessary to initialize the
@@ -33,7 +39,7 @@ import java.util.Locale;
  * Website: http://alamkanak.github.io
  */
 public class BaseActivity extends AppCompatActivity
-        implements EventClickListener<Event>, MonthChangeListener<Event>,
+        implements EventClickListener<Event>, MonthChangeListener,
         EventLongPressListener<Event>, EventDragListener {
 
     private static final int TYPE_DAY_VIEW = 1;
@@ -44,7 +50,9 @@ public class BaseActivity extends AppCompatActivity
     private WeekView<Event> mWeekView;
 
     private EventsDatabase mDatabase;
-
+    WeekViewEvent dragEvent;
+    WeekViewEvent lastDragEvent;
+    public List<WeekViewEvent> events=new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,9 +135,29 @@ public class BaseActivity extends AppCompatActivity
 
     @NotNull
     @Override
-    public List<WeekViewDisplayable<Event>> onMonthChange(@NonNull Calendar startDate,
+    public List<WeekViewDisplayable> onMonthChange(@NonNull Calendar startDate,
                                                           @NonNull Calendar endDate) {
-        return mDatabase.getEventsInRange(startDate, endDate);
+//        return mDatabase.getEventsInRange(startDate, endDate);
+
+        List<WeekViewDisplayable> matchedEvents = new ArrayList<WeekViewDisplayable>();
+
+        if (dragEvent != null)
+            matchedEvents.add(dragEvent);
+
+        dragEvent = null;
+        for (WeekViewEvent event : events) {
+
+            if (eventMatches(event, startDate.get(Calendar.YEAR), endDate.get(Calendar.MONTH))) {
+
+                matchedEvents.add(event);
+            }
+        }
+        return matchedEvents;
+    }
+
+    private boolean eventMatches(WeekViewEvent event, int year, int month) {
+
+        return (event.getStartTime().get(Calendar.YEAR) == year && event.getStartTime().get(Calendar.MONTH) == month - 1) || (event.getEndTime().get(Calendar.YEAR) == year && event.getEndTime().get(Calendar.MONTH) == month - 1);
     }
 
     @Override
@@ -144,18 +172,23 @@ public class BaseActivity extends AppCompatActivity
 
 
     @Override
-    public void onDragStart(Calendar start_cal) {
-
-    }
-
-
-    @Override
     public void onDragOver() {
 
     }
 
     @Override
-    public void onDragging(@NotNull Calendar data, @NotNull Calendar data1) {
-        Log.d("QWQW", "dragging");
+    public void onDragging(@NotNull Calendar cal_start, @NotNull Calendar cal_end) {
+
+        WeekViewEvent weekEvent = new WeekViewEvent(new Random().nextInt(1000), "", cal_start, cal_end);
+        weekEvent.setColor(Color.GRAY);
+
+
+        dragEvent = weekEvent;
+
+
+        lastDragEvent = weekEvent;
+        mWeekView.notifyDataSetChanged();
     }
+
+
 }
