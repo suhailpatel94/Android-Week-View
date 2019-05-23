@@ -284,14 +284,16 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             eventLongPressListener.onEventLongPress(data, eventChip.rect);
         }
 
+        if (eventDragListener != null)
+            isDragging = true;
+
         final float timeColumnWidth = config.getTimeColumnWidth();
 
         // If the tap was on in an empty space, then trigger the callback.
         if (emptyViewLongPressListener != null
                 && e.getX() > timeColumnWidth && e.getY() > config.getHeaderHeight()) {
             final ZonedDateTime selectedTime = touchHandler.getTimeFromPoint(e);
-            if (getEventDragListener() != null)
-                isDragging = true;
+
 
             if (selectedTime != null) {
                 emptyViewLongPressListener.onEmptyViewLongPress(toCalendar(selectedTime));

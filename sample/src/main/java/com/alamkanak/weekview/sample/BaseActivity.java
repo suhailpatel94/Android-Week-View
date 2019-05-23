@@ -4,6 +4,7 @@ import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -33,7 +34,7 @@ import java.util.Locale;
  */
 public class BaseActivity extends AppCompatActivity
         implements EventClickListener<Event>, MonthChangeListener<Event>,
-        EventLongPressListener<Event>, EmptyViewLongPressListener, EventDragListener {
+        EventLongPressListener<Event>, EventDragListener {
 
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
@@ -55,7 +56,7 @@ public class BaseActivity extends AppCompatActivity
         mWeekView.setOnEventClickListener(this);
         mWeekView.setMonthChangeListener(this);
         mWeekView.setEventLongPressListener(this);
-        mWeekView.setEmptyViewLongPressListener(this);
+
         mWeekView.setOnEventDragListener(this);
     }
 
@@ -141,10 +142,6 @@ public class BaseActivity extends AppCompatActivity
         Toast.makeText(this, "Long pressed event: " + event.getTitle(), Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public void onEmptyViewLongPress(@NonNull Calendar time) {
-        Toast.makeText(this, "Empty view long pressed: " + getEventTitle(time), Toast.LENGTH_SHORT).show();
-    }
 
     @Override
     public void onDragStart(Calendar start_cal) {
@@ -159,6 +156,6 @@ public class BaseActivity extends AppCompatActivity
 
     @Override
     public void onDragging(@NotNull Calendar data, @NotNull Calendar data1) {
-
+        Log.d("QWQW", "dragging");
     }
 }
