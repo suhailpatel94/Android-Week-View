@@ -37,7 +37,7 @@ import java.util.Random;
  * Created by Raquib-ul-Alam Kanak on 1/3/2014.
  * Website: http://alamkanak.github.io
  */
-public class BaseActivity extends AppCompatActivity
+public class DragActivity extends AppCompatActivity
         implements EventClickListener<Event>, MonthChangeListener<Event>,
         EventLongPressListener<Event>, EventDragListener {
 
@@ -56,7 +56,7 @@ public class BaseActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_base);
+        setContentView(R.layout.activity_drag);
 
         mDatabase = new FakeEventsDatabase(this);
 

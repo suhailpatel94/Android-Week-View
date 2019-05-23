@@ -13,4 +13,5 @@
     <string name="title_activity_limited">Basic Example (with limited date and time range)</string>
     <string name="async_error">Could not download events from the internet</string>
     <string name="date_infos">From %1$s to %2$s</string>
+    <string name="title_activity_drag">Create event by drag</string>
 </resources>
