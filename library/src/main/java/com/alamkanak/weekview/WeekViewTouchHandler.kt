@@ -49,6 +49,8 @@ internal class WeekViewTouchHandler(
                 return day
                         .withHour(hour + config.minHour)
                         .withMinute(minute)
+                        .withSecond(0)
+
             }
 
             startPixel += totalDayWidth
