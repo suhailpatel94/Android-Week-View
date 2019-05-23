@@ -497,15 +497,6 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         return val;
     }
 
-    public String FORMAT_TIME = "HH:mm";
-
-    public String calendarToString(Calendar cal, String format_type) {
-
-        SimpleDateFormat sdf = new SimpleDateFormat(format_type);
-        return sdf.format(cal.getTime());
-
-    }
-
     private boolean isCloseToQuarter(Calendar start_cal, Calendar end_cal, Calendar selected_cal) {
         return selected_cal.getTimeInMillis() >= start_cal.getTimeInMillis() && selected_cal.getTimeInMillis() < end_cal.getTimeInMillis();
     }
