@@ -560,7 +560,8 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
 
     public Calendar roundOffTime(Calendar cal, boolean getNearestToStart) {
-
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
 
         if (cal.get(Calendar.MINUTE) >= 0 && cal.get(Calendar.MINUTE) <= 15) {
             if (getNearestToStart)
