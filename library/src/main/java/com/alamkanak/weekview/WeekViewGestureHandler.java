@@ -66,8 +66,12 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     private PointF dragStartPoint = new PointF();
 
+    Calendar drag_init_start_time = Calendar.getInstance();
+    Calendar drag_init_end_time = Calendar.getInstance();
+
     Calendar drag_start_time = Calendar.getInstance();
     Calendar drag_end_time = Calendar.getInstance();
+
     boolean dragStartTimeSet = false;
     private int roundOffTimeMinutes = 15;
 
@@ -426,7 +430,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
         if (event.getAction() == MotionEvent.ACTION_UP) {
             if (isDragging) {
-                getEventDragListener().onDragOver();
+                getEventDragListener().onDragOver(drag_start_time, drag_end_time);
 
             }
             dragOver();
@@ -459,21 +463,21 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
 
                     if (!dragStartTimeSet) {
-                        drag_start_time.setTimeInMillis(roundOffTime(toCalendar(selectedTime), true).getTimeInMillis());
-                        drag_end_time.setTimeInMillis(roundOffTime(toCalendar(selectedTime), false).getTimeInMillis());
+                        drag_init_start_time.setTimeInMillis(roundOffTime(toCalendar(selectedTime), true).getTimeInMillis());
+                        drag_init_end_time.setTimeInMillis(roundOffTime(toCalendar(selectedTime), false).getTimeInMillis());
                         dragStartTimeSet = true;
                     }
 
-                    if (isCloseToQuarter(drag_start_time, drag_end_time, selectedCal)) {
-                        getEventDragListener().onDragging(drag_start_time, drag_end_time);
+                    if (isCloseToQuarter(drag_init_start_time, drag_init_end_time, selectedCal)) {
+                        callDrag(drag_init_start_time, drag_init_end_time);
                     } else {
 
-                        if (selectedCal.getTimeInMillis() > drag_end_time.getTimeInMillis()) {
+                        if (selectedCal.getTimeInMillis() > drag_init_end_time.getTimeInMillis()) {
                             Calendar updated_end_time = roundOffTime(selectedCal, false);
-                            getEventDragListener().onDragging(drag_start_time, updated_end_time);
+                            callDrag(drag_init_start_time, updated_end_time);
                         } else {
                             Calendar updated_start_time = roundOffTime(selectedCal, true);
-                            getEventDragListener().onDragging(updated_start_time, drag_end_time);
+                            callDrag(updated_start_time, drag_init_end_time);
                         }
 
 
@@ -495,6 +499,12 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
 
         return val;
+    }
+
+    public void callDrag(Calendar start_cal, Calendar end_cal) {
+        drag_start_time = start_cal;
+        drag_end_time = end_cal;
+        getEventDragListener().onDragging(drag_start_time, drag_end_time);
     }
 
     private boolean isCloseToQuarter(Calendar start_cal, Calendar end_cal, Calendar selected_cal) {

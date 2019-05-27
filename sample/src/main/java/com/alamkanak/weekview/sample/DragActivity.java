@@ -166,10 +166,7 @@ public class DragActivity extends AppCompatActivity
     }
 
 
-    @Override
-    public void onDragOver() {
 
-    }
 
     @Override
     public void onDragging(@NotNull Calendar cal_start, @NotNull Calendar cal_end) {
@@ -183,5 +180,10 @@ public class DragActivity extends AppCompatActivity
 
         lastDragEvent = weekEvent;
         mWeekView.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onDragOver(@NotNull Calendar cal_start, @NotNull Calendar cal_end) {
+
     }
 }
