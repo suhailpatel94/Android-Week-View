@@ -13,7 +13,6 @@ import android.widget.OverScroller;
 
 import org.threeten.bp.ZonedDateTime;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
@@ -454,7 +453,13 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
             if (isDragging) {
                 //drag and show view
+
+                if (!(event.getX() > config.getTimeColumnWidth() && event.getY() > config.getHeaderHeight()))
+                    return val;
+
+
                 ZonedDateTime selectedTime = touchHandler.getTimeFromPoint(event);
+
                 Calendar selectedCal = Calendar.getInstance();
                 if (selectedTime != null)
                     selectedCal = toCalendar(selectedTime);
