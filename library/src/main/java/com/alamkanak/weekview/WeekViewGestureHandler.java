@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.os.CountDownTimer;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -577,32 +578,17 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
     public Calendar roundOffTime(Calendar cal, boolean getNearestToStart) {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
+        int roundOffTime = 15;
 
-        if (cal.get(Calendar.MINUTE) >= 0 && cal.get(Calendar.MINUTE) <= 15) {
-            if (getNearestToStart)
-                cal.set(Calendar.MINUTE, 0);
-            else
-                cal.set(Calendar.MINUTE, 15);
+        int start_range = (cal.get(Calendar.MINUTE) / roundOffTime) * roundOffTime;
+        int end_range = start_range + roundOffTime;
 
-        } else if (cal.get(Calendar.MINUTE) > 15 && cal.get(Calendar.MINUTE) <= 30) {
-            if (getNearestToStart)
-                cal.set(Calendar.MINUTE, 15);
-            else
-                cal.set(Calendar.MINUTE, 30);
-        } else if (cal.get(Calendar.MINUTE) > 30 && cal.get(Calendar.MINUTE) <= 45) {
-            if (getNearestToStart)
-                cal.set(Calendar.MINUTE, 30);
-            else
-                cal.set(Calendar.MINUTE, 45);
-        } else if (cal.get(Calendar.MINUTE) > 45) {
-            if (getNearestToStart)
-                cal.set(Calendar.MINUTE, 45);
-            else
-                cal.set(Calendar.MINUTE, 60);
-        }
+        if (getNearestToStart)
+            cal.set(Calendar.MINUTE, start_range);
+        else
+            cal.set(Calendar.MINUTE, end_range);
 
         return cal;
     }
-
 
 }
