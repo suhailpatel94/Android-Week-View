@@ -61,7 +61,6 @@ class DragActivity : AppCompatActivity(), OnEventClickListener<Event>,
     }
 
 
-
     override fun onDragBegin() {
 
     }
@@ -91,7 +90,7 @@ class DragActivity : AppCompatActivity(), OnEventClickListener<Event>,
         }
         //performing cancel action
         builder.setNegativeButton("Cancel") { dialogInterface, which ->
-
+            weekView.notifyDataSetChanged()
         }
 
         // Create the AlertDialog
