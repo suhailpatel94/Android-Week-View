@@ -94,3 +94,34 @@ interface ScrollListener {
      */
     fun onFirstVisibleDateChanged(date: Calendar)
 }
+
+@FunctionalInterface
+interface EventDragBeginListener {
+    /**
+     * Called when the drag begins
+     */
+    fun onDragBegin()
+
+}
+
+@FunctionalInterface
+interface EventDraggingListener {
+    /**
+     * Called when dragging conitues begins
+     * @param startDateTime A [Calendar] representing the start of the selection
+     * @param endDateTime A [Calendar] representing the end of the selection
+     */
+    fun onDragging(startDateTime: Calendar, endDateTime: Calendar)
+
+}
+
+@FunctionalInterface
+interface EventDragOverListener {
+    /**
+     * Called when dragging event is over
+     * @param startDateTime A [Calendar] representing the start of the selection
+     * @param endDateTime A [Calendar] representing the end of the selection
+     */
+    fun onDragOver(startDateTime:Calendar,endDateTime:Calendar)
+
+}

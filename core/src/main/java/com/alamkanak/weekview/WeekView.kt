@@ -17,9 +17,9 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 class WeekView<T : Any> @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr), WeekViewViewState.Listener {
 
     private val configWrapper: WeekViewConfigWrapper by lazy {
@@ -38,10 +38,10 @@ class WeekView<T : Any> @JvmOverloads constructor(
     private val drawingContext = DrawingContext(configWrapper)
 
     private val gestureHandler =
-        WeekViewGestureHandler(this, configWrapper, eventChipCache, gestureListener)
+            WeekViewGestureHandler(this, configWrapper, eventChipCache, gestureListener)
 
     private var accessibilityTouchHelper = WeekViewAccessibilityTouchHelper(
-        this, configWrapper, drawingContext, gestureHandler, eventChipCache)
+            this, configWrapper, drawingContext, gestureHandler, eventChipCache)
 
     private val eventChipsLoader = EventChipsLoader(configWrapper, eventChipCache)
     private val eventChipsExpander = EventChipsExpander(configWrapper, eventChipCache)
@@ -57,17 +57,17 @@ class WeekView<T : Any> @JvmOverloads constructor(
     // Be careful when changing the order of the updaters, as the calculation of any updater might
     // depend on results of previous updaters
     private val updaters = listOf(
-        MultiLineDayLabelHeightUpdater(configWrapper, cache),
-        AllDayEventsUpdater(this, configWrapper, cache, eventChipCache),
-        HeaderRowHeightUpdater(configWrapper, eventsCacheWrapper),
-        SingleEventsUpdater(this, configWrapper, eventChipCache)
+            MultiLineDayLabelHeightUpdater(configWrapper, cache),
+            AllDayEventsUpdater(this, configWrapper, cache, eventChipCache),
+            HeaderRowHeightUpdater(configWrapper, eventsCacheWrapper),
+            SingleEventsUpdater(this, configWrapper, eventChipCache)
     )
 
     private var isAccessibilityHelperActive = false
 
     init {
         val accessibilityManager =
-            context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+                context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
 
         val isAccessibilityEnabled = accessibilityManager.isEnabled
         val isExploreByTouchEnabled = accessibilityManager.isTouchExplorationEnabled
@@ -81,14 +81,14 @@ class WeekView<T : Any> @JvmOverloads constructor(
     // Be careful when changing the order of the drawers, as that might cause
     // views to incorrectly draw over each other
     private val drawers = listOf(
-        DayBackgroundDrawer(this, configWrapper),
-        BackgroundGridDrawer(this, configWrapper),
-        SingleEventsDrawer(context, configWrapper, eventChipCache),
-        NowLineDrawer(configWrapper),
-        TimeColumnDrawer(this, configWrapper),
-        HeaderRowDrawer(this, configWrapper),
-        DayLabelDrawer(configWrapper, cache),
-        AllDayEventsDrawer(context, configWrapper, cache)
+            DayBackgroundDrawer(this, configWrapper),
+            BackgroundGridDrawer(this, configWrapper),
+            SingleEventsDrawer(context, configWrapper, eventChipCache),
+            NowLineDrawer(configWrapper),
+            TimeColumnDrawer(this, configWrapper),
+            HeaderRowDrawer(this, configWrapper),
+            DayLabelDrawer(configWrapper, cache),
+            AllDayEventsDrawer(context, configWrapper, cache)
     )
 
     override fun onDraw(canvas: Canvas) {
@@ -1174,7 +1174,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
         }
 
     fun setOnEventClickListener(
-        block: (data: T, rect: RectF) -> Unit
+            block: (data: T, rect: RectF) -> Unit
     ) {
         onEventClickListener = object : OnEventClickListener<T> {
             override fun onEventClick(data: T, eventRect: RectF) {
@@ -1191,12 +1191,12 @@ class WeekView<T : Any> @JvmOverloads constructor(
         }
 
     fun setOnMonthChangeListener(
-        block: (startDate: Calendar, endDate: Calendar) -> List<WeekViewDisplayable<T>>
+            block: (startDate: Calendar, endDate: Calendar) -> List<WeekViewDisplayable<T>>
     ) {
         onMonthChangeListener = object : OnMonthChangeListener<T> {
             override fun onMonthChange(
-                startDate: Calendar,
-                endDate: Calendar
+                    startDate: Calendar,
+                    endDate: Calendar
             ): List<WeekViewDisplayable<T>> {
                 return block(startDate, endDate)
             }
@@ -1227,7 +1227,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
      * similar to an [OnMonthChangeListener], but does not require anything to be returned.
      */
     fun setOnLoadMoreListener(
-        block: (startDate: Calendar, endDate: Calendar) -> Unit
+            block: (startDate: Calendar, endDate: Calendar) -> Unit
     ) {
         onLoadMoreListener = object : OnLoadMoreListener {
             override fun onLoadMore(startDate: Calendar, endDate: Calendar) {
@@ -1243,7 +1243,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
         }
 
     fun setOnEventLongClickListener(
-        block: (data: T, rect: RectF) -> Unit
+            block: (data: T, rect: RectF) -> Unit
     ) {
         onEventLongClickListener = object : OnEventLongClickListener<T> {
             override fun onEventLongClick(data: T, eventRect: RectF) {
@@ -1259,7 +1259,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
         }
 
     fun setOnEmptyViewClickListener(
-        block: (time: Calendar) -> Unit
+            block: (time: Calendar) -> Unit
     ) {
         onEmptyViewClickListener = object : OnEmptyViewClickListener {
             override fun onEmptyViewClicked(time: Calendar) {
@@ -1275,7 +1275,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
         }
 
     fun setOnEmptyViewLongClickListener(
-        block: (time: Calendar) -> Unit
+            block: (time: Calendar) -> Unit
     ) {
         onEmptyViewLongClickListener = object : OnEmptyViewLongClickListener {
             override fun onEmptyViewLongClick(time: Calendar) {
@@ -1291,7 +1291,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
         }
 
     fun setScrollListener(
-        block: (date: Calendar) -> Unit
+            block: (date: Calendar) -> Unit
     ) {
         scrollListener = object : ScrollListener {
             override fun onFirstVisibleDateChanged(date: Calendar) {
@@ -1303,7 +1303,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
     var onRangeChangeListener: OnRangeChangeListener? = null
 
     fun setOnRangeChangeListener(
-        block: (firstVisibleDate: Calendar, lastVisibleDate: Calendar) -> Unit
+            block: (firstVisibleDate: Calendar, lastVisibleDate: Calendar) -> Unit
     ) {
         onRangeChangeListener = object : OnRangeChangeListener {
             override fun onRangeChanged(firstVisibleDate: Calendar, lastVisibleDate: Calendar) {
@@ -1321,8 +1321,8 @@ class WeekView<T : Any> @JvmOverloads constructor(
 
     private fun clearCaches() {
         drawers
-            .filterIsInstance(CachingDrawer::class.java)
-            .forEach { it.clear() }
+                .filterIsInstance(CachingDrawer::class.java)
+                .forEach { it.clear() }
     }
 
     override fun dispatchHoverEvent(event: MotionEvent): Boolean {
@@ -1331,4 +1331,29 @@ class WeekView<T : Any> @JvmOverloads constructor(
         }
         return super.dispatchHoverEvent(event)
     }
+
+    var snapMinutes: Int
+        get() = gestureHandler.snapMinutes
+        set(value) {
+            gestureHandler.snapMinutes = value
+            invalidate()
+        }
+
+    var eventDragBeginListener
+        get() = gestureHandler.eventDragBeginListener
+        set(value) {
+            gestureHandler.eventDragBeginListener = value
+        }
+
+    var eventDraggingListener
+        get() = gestureHandler.eventDraggingListener
+        set(value) {
+            gestureHandler.eventDraggingListener = value
+        }
+
+    var eventDragOverListener
+        get() = gestureHandler.eventDragOverListener
+        set(value) {
+            gestureHandler.eventDragOverListener = value
+        }
 }

@@ -1,22 +1,15 @@
 package com.alamkanak.weekview
 
-import android.view.GestureDetector
-import android.view.MotionEvent
+
+import android.util.Log
+import android.view.*
 import android.view.MotionEvent.ACTION_UP
-import android.view.ScaleGestureDetector
-import android.view.View
-import android.view.ViewConfiguration
 import android.widget.OverScroller
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
-import com.alamkanak.weekview.Direction.LEFT
-import com.alamkanak.weekview.Direction.NONE
-import com.alamkanak.weekview.Direction.RIGHT
-import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.round
+import com.alamkanak.weekview.Direction.*
+import java.util.*
+import kotlin.math.*
+
 
 private enum class Direction {
     NONE, LEFT, RIGHT, VERTICAL;
@@ -38,10 +31,10 @@ private enum class Direction {
 }
 
 internal class WeekViewGestureHandler<T : Any>(
-    private val view: WeekView<*>,
-    private val config: WeekViewConfigWrapper,
-    private val chipCache: EventChipCache<T>,
-    private val listener: Listener
+        private val view: WeekView<*>,
+        private val config: WeekViewConfigWrapper,
+        private val chipCache: EventChipCache<T>,
+        private val listener: Listener
 ) : GestureDetector.SimpleOnGestureListener() {
 
     private val touchHandler = WeekViewTouchHandler(config)
@@ -53,25 +46,25 @@ internal class WeekViewGestureHandler<T : Any>(
     private val gestureDetector = GestureDetector(view.context, this)
 
     private val scaleDetector = ScaleGestureDetector(view.context,
-        object : ScaleGestureDetector.OnScaleGestureListener {
-            override fun onScaleEnd(detector: ScaleGestureDetector) {
-                isZooming = false
-                listener.requireInvalidation()
-            }
+            object : ScaleGestureDetector.OnScaleGestureListener {
+                override fun onScaleEnd(detector: ScaleGestureDetector) {
+                    isZooming = false
+                    listener.requireInvalidation()
+                }
 
-            override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-                isZooming = true
-                goToNearestOrigin()
-                return true
-            }
+                override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                    isZooming = true
+                    goToNearestOrigin()
+                    return true
+                }
 
-            override fun onScale(detector: ScaleGestureDetector): Boolean {
-                val hourHeight = config.hourHeight
-                config.newHourHeight = hourHeight * detector.scaleFactor
-                listener.requireInvalidation()
-                return true
-            }
-        })
+                override fun onScale(detector: ScaleGestureDetector): Boolean {
+                    val hourHeight = config.hourHeight
+                    config.newHourHeight = hourHeight * detector.scaleFactor
+                    listener.requireInvalidation()
+                    return true
+                }
+            })
 
     private var isZooming: Boolean = false
 
@@ -84,20 +77,59 @@ internal class WeekViewGestureHandler<T : Any>(
     var onEmptyViewClickListener: OnEmptyViewClickListener? = null
     var onEmptyViewLongClickListener: OnEmptyViewLongClickListener? = null
 
+    var eventDragBeginListener: EventDragBeginListener? = null
+        get() = field
+        set(value) {
+            Log.e("CALLED", "CALLED")
+            field = value
+            setDragStatus()
+        }
+    var eventDraggingListener: EventDraggingListener? = null
+        get() = field
+        set(value) {
+            field = value
+            setDragStatus()
+        }
+    var eventDragOverListener: EventDragOverListener? = null
+        get() = field
+        set(value) {
+            field = value
+            setDragStatus()
+        }
+
     var scrollListener: ScrollListener? = null
 
+    private var isDraggingGoingOn = false
+    private lateinit var drag_init_start_time: Calendar
+    private lateinit var drag_init_end_time: Calendar
+
+    private lateinit var drag_start_time: Calendar
+    private lateinit var drag_end_time: Calendar
+
+    private var dragStartTimeSet = false
+    private var isDragEnabled = false
+    var snapMinutes = 1
+        get() = field
+        set(value) {
+            if (60 % value != 0) {
+                throw IllegalArgumentException("snap value should be a factor of 60")
+            } else
+                field = value
+        }
+
+
     override fun onDown(
-        e: MotionEvent
+            e: MotionEvent
     ): Boolean {
         goToNearestOrigin()
         return true
     }
 
     override fun onScroll(
-        e1: MotionEvent,
-        e2: MotionEvent,
-        distanceX: Float,
-        distanceY: Float
+            e1: MotionEvent,
+            e2: MotionEvent,
+            distanceX: Float,
+            distanceY: Float
     ): Boolean {
         if (isZooming) {
             return true
@@ -151,17 +183,17 @@ internal class WeekViewGestureHandler<T : Any>(
     }
 
     override fun onFling(
-        e1: MotionEvent,
-        e2: MotionEvent,
-        velocityX: Float,
-        velocityY: Float
+            e1: MotionEvent,
+            e2: MotionEvent,
+            velocityX: Float,
+            velocityY: Float
     ): Boolean {
         if (isZooming) {
             return true
         }
 
         val isHorizontalAndDisabled =
-            currentFlingDirection.isHorizontal && !config.horizontalFlingEnabled
+                currentFlingDirection.isHorizontal && !config.horizontalFlingEnabled
 
         val isVerticalAndDisabled = currentFlingDirection.isVertical && !config.verticalFlingEnabled
 
@@ -183,7 +215,7 @@ internal class WeekViewGestureHandler<T : Any>(
     }
 
     private fun onFlingHorizontal(
-        originalVelocityX: Float
+            originalVelocityX: Float
     ) {
         val startX = config.currentOrigin.x.toInt()
         val startY = config.currentOrigin.y.toInt()
@@ -204,7 +236,7 @@ internal class WeekViewGestureHandler<T : Any>(
     }
 
     private fun onFlingVertical(
-        originalVelocityY: Float
+            originalVelocityY: Float
     ) {
         val startX = config.currentOrigin.x.toInt()
         val startY = config.currentOrigin.y.toInt()
@@ -225,7 +257,7 @@ internal class WeekViewGestureHandler<T : Any>(
     }
 
     override fun onSingleTapConfirmed(
-        e: MotionEvent
+            e: MotionEvent
     ): Boolean {
         onEventClickListener?.let { listener ->
             val eventChip = findHitEvent(e.x, e.y) ?: return@let
@@ -236,7 +268,7 @@ internal class WeekViewGestureHandler<T : Any>(
             }
 
             val data = eventChip.originalEvent.data ?: throw NullPointerException(
-                "Did you pass the original object into the constructor of WeekViewEvent?")
+                    "Did you pass the original object into the constructor of WeekViewEvent?")
 
             val rect = checkNotNull(eventChip.bounds)
             listener.onEventClick(data, rect)
@@ -261,6 +293,12 @@ internal class WeekViewGestureHandler<T : Any>(
     override fun onLongPress(e: MotionEvent) {
         super.onLongPress(e)
 
+        if (isDragEnabled) {
+            eventDragBeginListener?.onDragBegin();
+
+            isDraggingGoingOn = true;
+        }
+
         onEventLongClickListener?.let { listener ->
             val eventChip = findHitEvent(e.x, e.y) ?: return@let
             if (eventChip.event.isNotAllDay && e.isInHeader) {
@@ -270,7 +308,7 @@ internal class WeekViewGestureHandler<T : Any>(
             }
 
             val data = eventChip.originalEvent.data ?: throw NullPointerException(
-                "Did you pass the original object into the constructor of WeekViewEvent?")
+                    "Did you pass the original object into the constructor of WeekViewEvent?")
 
             val rect = checkNotNull(eventChip.bounds)
             listener.onEventLongClick(data, rect)
@@ -286,6 +324,8 @@ internal class WeekViewGestureHandler<T : Any>(
                 listener.onEmptyViewLongClick(selectedTime)
             }
         }
+
+
     }
 
     internal fun findHitEvent(x: Float, y: Float): EventChip<T>? {
@@ -352,8 +392,67 @@ internal class WeekViewGestureHandler<T : Any>(
             currentScrollDirection = NONE
         }
 
+        if (isDragEnabled && event.getAction() == MotionEvent.ACTION_UP) {
+            if (isDraggingGoingOn) {
+                eventDragOverListener?.onDragOver(drag_start_time, drag_end_time);
+            }
+            dragOver();
+
+        }
+
+        if (isDragEnabled && event.getAction() == MotionEvent.ACTION_MOVE) {
+            //Check if user is actually longpressing, not slow-moving
+            // if current position differs much then press positon then discard whole thing
+            // If position change is minimal then after 0.5s that is a longpress. You can now process your other gestures
+
+            if (isDraggingGoingOn) {
+                //drag and show view
+
+                if (!(event.x > config.timeColumnWidth && event.getY() > config.headerHeight))
+                    return value;
+
+
+                var selectedCal = touchHandler.calculateTimeFromPoint(event.x, event.y);
+
+
+
+                if (selectedCal != null) {
+
+
+                    if (!dragStartTimeSet) {
+                        drag_init_start_time = Calendar.getInstance();
+                        drag_init_end_time = Calendar.getInstance();
+                        drag_init_start_time.setTimeInMillis(roundOffTime(selectedCal, true).getTimeInMillis());
+                        drag_init_end_time.setTimeInMillis(roundOffTime(selectedCal, false).getTimeInMillis());
+                        dragStartTimeSet = true;
+                    }
+
+                    if (isCloseToQuarter(drag_init_start_time, drag_init_end_time, selectedCal)) {
+                        callDrag(drag_init_start_time, drag_init_end_time);
+                    } else {
+
+                        if (selectedCal.getTimeInMillis() > drag_init_end_time.getTimeInMillis()) {
+                            var updated_end_time = roundOffTime(selectedCal, false);
+                            callDrag(drag_init_start_time, updated_end_time);
+                        } else {
+                            var updated_start_time = roundOffTime(selectedCal, true);
+                            callDrag(updated_start_time, drag_init_end_time);
+                        }
+
+
+                    }
+
+
+                }
+
+
+//                scrollWhileDrag(event);
+
+            }
+        }
         return value
     }
+
 
     fun forceScrollFinished() {
         scroller.forceFinished(true)
@@ -395,6 +494,52 @@ internal class WeekViewGestureHandler<T : Any>(
 
     private val View.scaledTouchSlop: Int
         get() = ViewConfiguration.get(context).scaledTouchSlop
+
+
+    fun callDrag(start_cal: Calendar, end_cal: Calendar) {
+
+        if ((!::drag_start_time.isInitialized && !::drag_end_time.isInitialized) || (drag_start_time.timeInMillis != start_cal.timeInMillis || drag_end_time.timeInMillis != end_cal.timeInMillis)) {
+            drag_start_time = start_cal
+            drag_end_time = end_cal
+            eventDraggingListener?.onDragging(drag_start_time, drag_end_time)
+        }
+
+
+    }
+
+    private fun isCloseToQuarter(start_cal: Calendar, end_cal: Calendar, selected_cal: Calendar): Boolean {
+        return selected_cal.timeInMillis >= start_cal.timeInMillis && selected_cal.timeInMillis < end_cal.timeInMillis
+    }
+
+    private fun dragOver() {
+
+        isDraggingGoingOn = false
+        dragStartTimeSet = false
+
+    }
+
+
+    fun roundOffTime(cal: Calendar, getNearestToStart: Boolean): Calendar {
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+
+
+        val start_range = cal.get(Calendar.MINUTE) / snapMinutes * snapMinutes
+        val end_range = start_range + snapMinutes
+
+        if (getNearestToStart)
+            cal.set(Calendar.MINUTE, start_range)
+        else
+            cal.set(Calendar.MINUTE, end_range)
+
+        return cal
+    }
+
+
+    private fun setDragStatus() {
+        isDragEnabled = eventDragBeginListener != null || eventDraggingListener != null || eventDragOverListener != null
+    }
+
 
     internal interface Listener {
         fun requireInvalidation()

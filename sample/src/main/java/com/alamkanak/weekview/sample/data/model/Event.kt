@@ -8,7 +8,7 @@ import java.util.Calendar
 
 class Event(
     val id: Long,
-    val title: String,
+    var title: String,
     private val startTime: Calendar,
     private val endTime: Calendar,
     private val location: String,
