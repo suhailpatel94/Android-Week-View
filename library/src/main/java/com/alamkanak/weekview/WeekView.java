@@ -944,6 +944,19 @@ public final class WeekView<T> extends View
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //
+    //  Drag
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    public int getSnapMinutes() {
+        return gestureHandler.getSnapMinutes();
+    }
+
+    public void setSnapMinutes(int snapMinutes) {
+        gestureHandler.setSnapMinutes(snapMinutes);
+        invalidate();
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //
     //  Date range
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1268,12 +1281,29 @@ public final class WeekView<T> extends View
         return gestureHandler.getEventClickListener();
     }
 
-    public void setOnEventDragListener(EventDragListener<T> listener) {
-        gestureHandler.setEventDragListener(listener);
+    public EventDragBeginListener<T> getEventDragBeginListener() {
+        return gestureHandler.getEventDragBeginListener();
     }
 
-    public EventDragListener getEventDragListener() {
-        return gestureHandler.getEventDragListener();
+    public void setEventDragBeginListener(EventDragBeginListener<T> eventDragBeginListener) {
+        gestureHandler.setEventDragBeginListener(eventDragBeginListener);
+    }
+
+    public EventDraggingListener<T> getEventDraggingListener() {
+        return gestureHandler.getEventDraggingListener();
+    }
+
+    public void setEventDraggingListener(EventDraggingListener<T> eventDraggingListener) {
+        gestureHandler.setEventDraggingListener(eventDraggingListener);
+
+    }
+
+    public EventDragOverListener<T> getEventDragOverListener() {
+        return gestureHandler.getEventDragOverListener();
+    }
+
+    public void setEventDragOverListener(EventDragOverListener<T> eventDragOverListener) {
+        gestureHandler.setEventDragOverListener(eventDragOverListener);
     }
 
     @Nullable
@@ -1288,6 +1318,7 @@ public final class WeekView<T> extends View
         WeekViewLoader<T> weekViewLoader = new MonthLoader<>(monthChangeListener);
         gestureHandler.setWeekViewLoader(weekViewLoader);
         eventChipsProvider.setWeekViewLoader(weekViewLoader);
+
     }
 
     /**

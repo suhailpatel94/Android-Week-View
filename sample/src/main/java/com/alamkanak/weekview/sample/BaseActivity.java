@@ -13,7 +13,10 @@ import android.widget.Toast;
 
 import com.alamkanak.weekview.EmptyViewLongPressListener;
 import com.alamkanak.weekview.EventClickListener;
+import com.alamkanak.weekview.EventDragBeginListener;
 import com.alamkanak.weekview.EventDragListener;
+import com.alamkanak.weekview.EventDragOverListener;
+import com.alamkanak.weekview.EventDraggingListener;
 import com.alamkanak.weekview.EventLongPressListener;
 import com.alamkanak.weekview.MonthChangeListener;
 import com.alamkanak.weekview.WeekView;
@@ -39,7 +42,7 @@ import java.util.Random;
  */
 public class BaseActivity extends AppCompatActivity
         implements EventClickListener<Event>, MonthChangeListener<Event>,
-        EventLongPressListener<Event>, EventDragListener {
+        EventLongPressListener<Event>, EventDragBeginListener, EventDraggingListener, EventDragOverListener {
 
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
@@ -65,7 +68,11 @@ public class BaseActivity extends AppCompatActivity
         mWeekView.setMonthChangeListener(this);
         mWeekView.setEventLongPressListener(this);
 
-        mWeekView.setOnEventDragListener(this);
+
+        mWeekView.setEventDragBeginListener(this);
+        mWeekView.setEventDraggingListener(this);
+        mWeekView.setEventDragOverListener(this);
+
     }
 
     @Override
@@ -133,6 +140,7 @@ public class BaseActivity extends AppCompatActivity
         return String.format(Locale.getDefault(), "Event of %02d:%02d %s/%d", hour, minute, month, dayOfMonth);
     }
 
+
     @NotNull
     @Override
     public List<WeekViewDisplayable<Event>> onMonthChange(@NonNull Calendar startDate,
@@ -166,8 +174,6 @@ public class BaseActivity extends AppCompatActivity
     }
 
 
-
-
     @Override
     public void onDragging(@NotNull Calendar cal_start, @NotNull Calendar cal_end) {
 
@@ -184,6 +190,11 @@ public class BaseActivity extends AppCompatActivity
 
     @Override
     public void onDragOver(@NotNull Calendar cal_start, @NotNull Calendar cal_end) {
+
+    }
+
+    @Override
+    public void onDragBegin() {
 
     }
 }

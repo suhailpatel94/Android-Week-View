@@ -13,7 +13,10 @@ import android.widget.Toast;
 
 import com.alamkanak.weekview.EmptyViewLongPressListener;
 import com.alamkanak.weekview.EventClickListener;
+import com.alamkanak.weekview.EventDragBeginListener;
 import com.alamkanak.weekview.EventDragListener;
+import com.alamkanak.weekview.EventDragOverListener;
+import com.alamkanak.weekview.EventDraggingListener;
 import com.alamkanak.weekview.EventLongPressListener;
 import com.alamkanak.weekview.MonthChangeListener;
 import com.alamkanak.weekview.WeekView;
@@ -39,7 +42,7 @@ import java.util.Random;
  */
 public class DragActivity extends AppCompatActivity
         implements EventClickListener<Event>, MonthChangeListener<Event>,
-        EventLongPressListener<Event>, EventDragListener {
+        EventLongPressListener<Event>, EventDraggingListener, EventDragOverListener, EventDragBeginListener {
 
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
@@ -65,7 +68,10 @@ public class DragActivity extends AppCompatActivity
         mWeekView.setMonthChangeListener(this);
         mWeekView.setEventLongPressListener(this);
 
-        mWeekView.setOnEventDragListener(this);
+        mWeekView.setEventDraggingListener(this);
+        mWeekView.setEventDragBeginListener(this);
+        mWeekView.setEventDragOverListener(this);
+        mWeekView.setSnapMinutes(15);
     }
 
     @Override
@@ -177,13 +183,19 @@ public class DragActivity extends AppCompatActivity
 
         dragEvent = weekEvent;
 
-
+        Log.e("ONDRAGGING","ONDRAGGING");
         lastDragEvent = weekEvent;
         mWeekView.notifyDataSetChanged();
+
     }
 
     @Override
     public void onDragOver(@NotNull Calendar cal_start, @NotNull Calendar cal_end) {
+        Toast.makeText(this, "Drag Over", Toast.LENGTH_SHORT).show();
+    }
 
+    @Override
+    public void onDragBegin() {
+        Toast.makeText(this, "Drag Begin", Toast.LENGTH_SHORT).show();
     }
 }

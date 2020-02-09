@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.os.CountDownTimer;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -52,7 +51,8 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     private EventClickListener<T> eventClickListener;
     private EventLongPressListener<T> eventLongPressListener;
-    private EventDragListener<T> eventDragListener;
+
+
 
     private EmptyViewClickListener emptyViewClickListener;
     private EmptyViewLongPressListener emptyViewLongPressListener;
@@ -60,20 +60,23 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
     private WeekViewLoader<T> weekViewLoader;
     private ScrollListener scrollListener;
 
+    private EventDragBeginListener<T> eventDragBeginListener;
+    private EventDraggingListener<T> eventDraggingListener;
+    private EventDragOverListener<T> eventDragOverListener;
 
-    private boolean isDragging = false, longPressTimerCancelled = false, longPressTimerRunning = false;
+    private boolean longPressTimerCancelled = false, longPressTimerRunning = false;
     private CountDownTimer longPressTimer = null;
 
-    private PointF dragStartPoint = new PointF();
+    private boolean isDraggingGoingOn = false;
+    private Calendar drag_init_start_time;
+    private Calendar drag_init_end_time;
 
-    Calendar drag_init_start_time = Calendar.getInstance();
-    Calendar drag_init_end_time = Calendar.getInstance();
+    private Calendar drag_start_time;
+    private Calendar drag_end_time;
 
-    Calendar drag_start_time = Calendar.getInstance();
-    Calendar drag_end_time = Calendar.getInstance();
-
-    boolean dragStartTimeSet = false;
-    private int roundOffTimeMinutes = 15;
+    private boolean dragStartTimeSet = false;
+    private boolean isDragEnabled = false;
+    private int snapMinutes = 1;
 
     WeekViewGestureHandler(Context context, View view,
                            WeekViewConfigWrapper config, WeekViewCache<T> cache) {
@@ -104,6 +107,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
+
                 float hourHeight = WeekViewGestureHandler.this.config.getHourHeight();
                 WeekViewGestureHandler.this.config.setNewHourHeight(hourHeight * detector.getScaleFactor());
                 listener.onScaled();
@@ -291,8 +295,13 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             eventLongPressListener.onEventLongPress(data, eventChip.rect);
         }
 
-        if (eventDragListener != null)
-            isDragging = true;
+        if (isDragEnabled) {
+            if (getEventDragBeginListener() != null)
+                getEventDragBeginListener().onDragBegin();
+
+            isDraggingGoingOn = true;
+        }
+
 
         final float timeColumnWidth = config.getTimeColumnWidth();
 
@@ -318,6 +327,10 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         return null;
     }
 
+    private void setDragStatus() {
+        isDragEnabled = getEventDragBeginListener() != null || getEventDraggingListener() != null || getEventDragOverListener() != null;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //   Getters and Setters
@@ -341,12 +354,31 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
     }
 
 
-    public EventDragListener<T> getEventDragListener() {
-        return eventDragListener;
+    public EventDragBeginListener<T> getEventDragBeginListener() {
+        return eventDragBeginListener;
     }
 
-    public void setEventDragListener(EventDragListener<T> eventDragListener) {
-        this.eventDragListener = eventDragListener;
+    public void setEventDragBeginListener(EventDragBeginListener<T> eventDragBeginListener) {
+        this.eventDragBeginListener = eventDragBeginListener;
+        setDragStatus();
+    }
+
+    public EventDraggingListener<T> getEventDraggingListener() {
+        return eventDraggingListener;
+    }
+
+    public void setEventDraggingListener(EventDraggingListener<T> eventDraggingListener) {
+        this.eventDraggingListener = eventDraggingListener;
+        setDragStatus();
+    }
+
+    public EventDragOverListener<T> getEventDragOverListener() {
+        return eventDragOverListener;
+    }
+
+    public void setEventDragOverListener(EventDragOverListener<T> eventDragOverListener) {
+        this.eventDragOverListener = eventDragOverListener;
+        setDragStatus();
     }
 
     WeekViewLoader<T> getWeekViewLoader() {
@@ -428,10 +460,9 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         final boolean val = gestureDetector.onTouchEvent(event);
 
 
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (isDragging) {
-                getEventDragListener().onDragOver(drag_start_time, drag_end_time);
-
+        if (isDragEnabled && event.getAction() == MotionEvent.ACTION_UP) {
+            if (isDraggingGoingOn && getEventDragOverListener() != null) {
+                getEventDragOverListener().onDragOver(drag_start_time, drag_end_time);
             }
             dragOver();
 
@@ -447,12 +478,12 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         }
 
 
-        if (getEventDragListener() != null && event.getAction() == MotionEvent.ACTION_MOVE) {
+        if (isDragEnabled && event.getAction() == MotionEvent.ACTION_MOVE) {
             //Check if user is actually longpressing, not slow-moving
             // if current position differs much then press positon then discard whole thing
             // If position change is minimal then after 0.5s that is a longpress. You can now process your other gestures
 
-            if (isDragging) {
+            if (isDraggingGoingOn) {
                 //drag and show view
 
                 if (!(event.getX() > config.getTimeColumnWidth() && event.getY() > config.getHeaderHeight()))
@@ -469,6 +500,8 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
 
                     if (!dragStartTimeSet) {
+                        drag_init_start_time = Calendar.getInstance();
+                        drag_init_end_time = Calendar.getInstance();
                         drag_init_start_time.setTimeInMillis(roundOffTime(toCalendar(selectedTime), true).getTimeInMillis());
                         drag_init_end_time.setTimeInMillis(roundOffTime(toCalendar(selectedTime), false).getTimeInMillis());
                         dragStartTimeSet = true;
@@ -495,9 +528,6 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
 //                scrollWhileDrag(event);
 
-            } else {
-
-//                handleLongPressManually(event);
             }
 
 
@@ -508,9 +538,15 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
     }
 
     public void callDrag(Calendar start_cal, Calendar end_cal) {
-        drag_start_time = start_cal;
-        drag_end_time = end_cal;
-        getEventDragListener().onDragging(drag_start_time, drag_end_time);
+
+        if ((drag_start_time == null && drag_end_time == null) || drag_start_time.getTimeInMillis() != start_cal.getTimeInMillis() || drag_end_time.getTimeInMillis() != end_cal.getTimeInMillis()) {
+            drag_start_time = start_cal;
+            drag_end_time = end_cal;
+            if (getEventDraggingListener() != null)
+                getEventDraggingListener().onDragging(drag_start_time, drag_end_time);
+        }
+
+
     }
 
     private boolean isCloseToQuarter(Calendar start_cal, Calendar end_cal, Calendar selected_cal) {
@@ -557,7 +593,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     private void dragOver() {
 
-        isDragging = false;
+        isDraggingGoingOn = false;
         dragStartTimeSet = false;
         removeLongPressTimer();
 
@@ -569,7 +605,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             longPressTimer.cancel();
 
         longPressTimer = null;
-        isDragging = false;
+        isDraggingGoingOn = false;
         longPressTimerRunning = false;
         longPressTimerCancelled = false;
     }
@@ -578,10 +614,10 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
     public Calendar roundOffTime(Calendar cal, boolean getNearestToStart) {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-        int roundOffTime = 15;
 
-        int start_range = (cal.get(Calendar.MINUTE) / roundOffTime) * roundOffTime;
-        int end_range = start_range + roundOffTime;
+
+        int start_range = (cal.get(Calendar.MINUTE) / snapMinutes) * snapMinutes;
+        int end_range = start_range + snapMinutes;
 
         if (getNearestToStart)
             cal.set(Calendar.MINUTE, start_range);
@@ -591,4 +627,14 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         return cal;
     }
 
+    public int getSnapMinutes() {
+        return snapMinutes;
+    }
+
+    public void setSnapMinutes(int snapMinutes) {
+        this.snapMinutes = snapMinutes;
+        if (60 % snapMinutes != 0) {
+            throw new IllegalArgumentException("snap value should be a factor of 60");
+        }
+    }
 }
