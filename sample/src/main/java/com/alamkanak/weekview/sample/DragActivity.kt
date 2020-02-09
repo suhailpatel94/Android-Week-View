@@ -90,6 +90,7 @@ class DragActivity : AppCompatActivity(), OnEventClickListener<Event>,
         }
         //performing cancel action
         builder.setNegativeButton("Cancel") { dialogInterface, which ->
+            dragEvent = null
             weekView.notifyDataSetChanged()
         }
 
