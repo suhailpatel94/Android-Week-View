@@ -4,9 +4,7 @@ import android.graphics.Color
 import android.graphics.RectF
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.alamkanak.weekview.*
@@ -29,8 +27,9 @@ class DragActivity : AppCompatActivity(), OnEventClickListener<Event>,
     private val weekView: WeekView<Event> by lazyView(R.id.weekView)
 
     private val database: EventsDatabase by lazy { EventsDatabase(this) }
-    private val dateFormatter = SimpleDateFormat.getDateInstance(DateFormat.MEDIUM)
+
     var dragEvent: Event? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_drag)
@@ -43,24 +42,7 @@ class DragActivity : AppCompatActivity(), OnEventClickListener<Event>,
         weekView.eventDraggingListener = this
         weekView.eventDragOverListener = this
 
-        previousWeekButton.setOnClickListener {
-            val cal = checkNotNull(weekView.firstVisibleDate)
-            cal.add(Calendar.DATE, -7)
-            weekView.goToDate(cal)
-        }
 
-        nextWeekButton.setOnClickListener {
-            val cal = checkNotNull(weekView.firstVisibleDate)
-            cal.add(Calendar.DATE, 7)
-            weekView.goToDate(cal)
-        }
-
-        weekView.onRangeChangeListener = object : OnRangeChangeListener {
-            override fun onRangeChanged(
-                    firstVisibleDate: Calendar,
-                    lastVisibleDate: Calendar
-            ) = updateDateText(firstVisibleDate, lastVisibleDate)
-        }
     }
 
     override fun onMonthChange(startDate: Calendar, endDate: Calendar): List<WeekViewDisplayable<Event>> {
@@ -78,22 +60,14 @@ class DragActivity : AppCompatActivity(), OnEventClickListener<Event>,
         showToast("Clicked ${event.title}")
     }
 
-    internal fun updateDateText(firstVisibleDate: Calendar, lastVisibleDate: Calendar) {
-        val formattedFirstDay = dateFormatter.format(firstVisibleDate.time)
-        val formattedLastDay = dateFormatter.format(lastVisibleDate.time)
-        dateRangeTextView.text = getString(R.string.date_infos, formattedFirstDay, formattedLastDay)
-    }
+
 
     override fun onDragBegin() {
 
     }
 
     override fun onDragging(startDateTime: Calendar, endDateTime: Calendar) {
-
         dragEvent = Event(Random().nextInt(1000).toLong(), "", startDateTime, endDateTime, "", Color.GRAY, false, false)
-
-        Log.e("ONDRAGGING", "ONDRAGGING")
-
         weekView.notifyDataSetChanged()
     }
 
