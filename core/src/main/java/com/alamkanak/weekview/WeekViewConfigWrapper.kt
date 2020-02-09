@@ -10,8 +10,6 @@ import java.util.Calendar
 import kotlin.math.max
 import kotlin.math.min
 
-private const val DAYS_PER_WEEK = 7
-
 internal class WeekViewConfigWrapper(
     private val view: WeekView<*>,
     private val config: WeekViewConfig
@@ -231,7 +229,7 @@ internal class WeekViewConfigWrapper(
     val minX: Float
         get() {
             return maxDate?.let {
-                val date = it.minusDays(numberOfVisibleDays - 1)
+                val date = it - Days(numberOfVisibleDays - 1)
                 getXOriginForDate(date)
             } ?: Float.NEGATIVE_INFINITY
         }
@@ -253,6 +251,9 @@ internal class WeekViewConfigWrapper(
         set(value) {
             config.maxHour = value
         }
+
+    val timeRange: IntRange
+        get() = minHour..maxHour
 
     var xScrollingSpeed: Float
         get() = config.xScrollingSpeed
@@ -551,7 +552,7 @@ internal class WeekViewConfigWrapper(
 
         val desired = if (now.hour > 0) {
             // Add some padding above the current time (and thus: the now line)
-            now.minusHours(1)
+            now - Hours(1)
         } else {
             now.atStartOfDay
         }
@@ -580,10 +581,10 @@ internal class WeekViewConfigWrapper(
         return if (date.isBefore(minDate)) {
             minDate
         } else if (date.isAfter(maxDate)) {
-            maxDate.plusDays(1 - numberOfVisibleDays)
+            maxDate + Days(1 - numberOfVisibleDays)
         } else if (numberOfVisibleDays >= 7 && showFirstDayOfWeekFirst) {
             val diff = computeDifferenceWithFirstDayOfWeek(date)
-            date.minusDays(diff)
+            date - Days(diff)
         } else {
             date
         }
