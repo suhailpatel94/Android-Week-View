@@ -13,11 +13,11 @@ import java.util.Calendar
 import kotlin.math.roundToInt
 
 internal class WeekViewAccessibilityTouchHelper<T : Any>(
-    private val view: WeekView<T>,
-    private val config: WeekViewConfigWrapper,
-    private val drawingContext: DrawingContext,
-    private val gestureHandler: WeekViewGestureHandler<T>,
-    private val eventChipCache: EventChipCache<T>
+        private val view: WeekView<T>,
+        private val config: WeekViewConfigWrapper,
+        private val drawingContext: DrawingContext,
+        private val gestureHandler: WeekViewGestureHandler<T>,
+        private val eventChipCache: EventChipCache<T>
 ) : ExploreByTouchHelper(view) {
 
     private val context = view.context
@@ -26,6 +26,7 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
     private val dateTimeFormatter = SimpleDateFormat.getDateTimeInstance(LONG, SHORT)
 
     private val touchHandler = WeekViewTouchHandler(config)
+    val touchUtil = WeekViewTouchUtil(config)
     private val store = VirtualViewIdStore<T>()
 
     override fun getVirtualViewAt(x: Float, y: Float): Int {
@@ -55,9 +56,9 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
     }
 
     override fun onPerformActionForVirtualView(
-        virtualViewId: Int,
-        action: Int,
-        arguments: Bundle?
+            virtualViewId: Int,
+            action: Int,
+            arguments: Bundle?
     ): Boolean {
         val eventChip = store.findEventChip(virtualViewId)
         val date = store.findDate(virtualViewId)
@@ -70,9 +71,9 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
     }
 
     private fun onPerformActionForEventChip(
-        virtualViewId: Int,
-        eventChip: EventChip<T>,
-        action: Int
+            virtualViewId: Int,
+            eventChip: EventChip<T>,
+            action: Int
     ): Boolean {
         val data = checkNotNull(eventChip.originalEvent.data)
         val rect = checkNotNull(eventChip.bounds)
@@ -93,9 +94,9 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
     }
 
     private fun onPerformActionForDate(
-        virtualViewId: Int,
-        date: Calendar,
-        action: Int
+            virtualViewId: Int,
+            date: Calendar,
+            action: Int
     ): Boolean {
         return when (action) {
             AccessibilityNodeInfoCompat.ACTION_CLICK -> {
@@ -113,8 +114,8 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
     }
 
     override fun onPopulateNodeForVirtualView(
-        virtualViewId: Int,
-        node: AccessibilityNodeInfoCompat
+            virtualViewId: Int,
+            node: AccessibilityNodeInfoCompat
     ) {
         val eventChip = store.findEventChip(virtualViewId)
         if (eventChip != null) {
@@ -132,8 +133,8 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
     }
 
     private fun populateNodeWithEventInfo(
-        eventChip: EventChip<T>,
-        node: AccessibilityNodeInfoCompat
+            eventChip: EventChip<T>,
+            node: AccessibilityNodeInfoCompat
     ) {
         node.contentDescription = createDescriptionForVirtualView(eventChip.originalEvent)
 
@@ -146,8 +147,8 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
     }
 
     private fun populateNodeWithDateInfo(
-        date: Calendar,
-        node: AccessibilityNodeInfoCompat
+            date: Calendar,
+            node: AccessibilityNodeInfoCompat
     ) {
         node.contentDescription = createDescriptionForVirtualView(date)
 
@@ -155,7 +156,7 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
         node.addAction(AccessibilityActionCompat.ACTION_LONG_CLICK)
 
         val dateWithStartPixel = drawingContext.dateRangeWithStartPixels
-            .firstOrNull { it.first == date } ?: return
+                .firstOrNull { it.first == date } ?: return
 
         val left = dateWithStartPixel.second.roundToInt()
         val right = left + config.totalDayWidth.roundToInt()
@@ -199,14 +200,14 @@ private class VirtualViewIdStore<T> {
     }
 
     fun findEventChip(
-        virtualViewId: Int
+            virtualViewId: Int
     ): EventChip<T>? {
         val index = eventChipVirtualViewIds.indexOfFirst { it == virtualViewId }
         return if (index != -1) eventChips[index] else null
     }
 
     fun findDate(
-        virtualViewId: Int
+            virtualViewId: Int
     ): Calendar? {
         val index = dateVirtualViewIds.indexOfFirst { it == virtualViewId }
         return if (index != -1) dates[index] else null
