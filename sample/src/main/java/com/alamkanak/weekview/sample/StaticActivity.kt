@@ -2,6 +2,7 @@ package com.alamkanak.weekview.sample
 
 import android.graphics.RectF
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.util.Preconditions.checkNotNull
@@ -25,12 +26,14 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 class StaticActivity : AppCompatActivity(), OnEventClickListener<Event>,
-    OnMonthChangeListener<Event>, OnEventLongClickListener<Event>, OnEmptyViewLongClickListener {
+        OnMonthChangeListener<Event>, OnEventLongClickListener<Event>, OnEmptyViewLongClickListener {
 
     private val weekView: WeekView<Event> by lazyView(R.id.weekView)
 
     private val database: EventsDatabase by lazy { EventsDatabase(this) }
     private val dateFormatter = SimpleDateFormat.getDateInstance(DateFormat.MEDIUM)
+    var last_touch_x: Float = 0.0f
+    var last_touch_y: Float = 0.0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,15 +60,22 @@ class StaticActivity : AppCompatActivity(), OnEventClickListener<Event>,
 
         weekView.onRangeChangeListener = object : OnRangeChangeListener {
             override fun onRangeChanged(
-                firstVisibleDate: Calendar,
-                lastVisibleDate: Calendar
+                    firstVisibleDate: Calendar,
+                    lastVisibleDate: Calendar
             ) = updateDateText(firstVisibleDate, lastVisibleDate)
+        }
+
+
+        weekView.setOnTouchListener { v, event ->
+            last_touch_x = event.x
+            last_touch_y = event.y
+            false
         }
     }
 
     override fun onMonthChange(
-        startDate: Calendar,
-        endDate: Calendar
+            startDate: Calendar,
+            endDate: Calendar
     ) = database.getEventsInRange(startDate, endDate)
 
     override fun onEventClick(event: Event, eventRect: RectF) {
@@ -74,11 +84,15 @@ class StaticActivity : AppCompatActivity(), OnEventClickListener<Event>,
 
     override fun onEventLongClick(event: Event, eventRect: RectF) {
         showToast("Long-clicked ${event.title}")
+
         Toast.makeText(this, "Long pressed event: " + event.title, Toast.LENGTH_SHORT).show()
     }
 
     override fun onEmptyViewLongClick(time: Calendar) {
         val sdf = SimpleDateFormat.getDateTimeInstance()
+        weekView.getSnappedPixel(last_touch_x, last_touch_y, true)
+        weekView.calculateTimeFromPoint(last_touch_x, last_touch_y)
+        Log.e("TOUCHPX", "$last_touch_x || $last_touch_y")
         showToast("Empty view long-clicked at ${sdf.format(time.time)}")
     }
 

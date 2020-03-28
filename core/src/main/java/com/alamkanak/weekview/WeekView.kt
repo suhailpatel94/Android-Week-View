@@ -1342,9 +1342,6 @@ class WeekView<T : Any> @JvmOverloads constructor(
         return super.dispatchHoverEvent(event)
     }
 
-    fun getLeftAndRightPixelFromPoint(x: Float, y: Float): PointCalendarWrapper? {
-        return accessibilityTouchHelper.touchUtil.getLeftAndRightPixelFromPoint(x, y)
-    }
 
     fun getSnappedPixel(x: Float, y: Float, snap_to_top: Boolean): PointCalendarWrapper? {
         return accessibilityTouchHelper.touchUtil.getSnappedPixel(x, y, snap_to_top)
