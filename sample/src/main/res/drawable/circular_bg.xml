@@ -12,10 +12,10 @@
                     ring : A ring shape.
         -->
         <shape android:shape="oval">
-            <solid android:color="#2979ff"/>
-            <stroke android:color="#fff" android:width="2dp"/>
+            <solid android:color="#fff"/>
+            <stroke android:color="@color/accent" android:width="2dp"/>
             <!-- Set the same value for both width and height to get a circular shape -->
-            <size android:width="250dp" android:height="250dp"/>
+            <size android:width="16dp" android:height="16dp"/>
         </shape>
     </item>
 </selector>
