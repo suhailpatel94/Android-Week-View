@@ -7,6 +7,7 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.accessibility.AccessibilityManager
@@ -1349,5 +1350,10 @@ class WeekView<T : Any> @JvmOverloads constructor(
 
     fun calculateTimeFromPoint(x: Float, y: Float): Calendar? {
         return accessibilityTouchHelper.touchUtil.calculateTimeFromPoint(x, y)
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        setMeasuredDimension(widthMeasureSpec,7000)
     }
 }

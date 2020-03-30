@@ -45,9 +45,9 @@
 
     </LinearLayout>
 
-    <ScrollView
+    <com.alamkanak.weekview.sample.CustomSV
+        android:id="@+id/parent"
         android:layout_width="match_parent"
-
         android:layout_height="match_parent">
 
         <FrameLayout
@@ -59,7 +59,6 @@
                 android:id="@+id/weekView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
                 app:columnGap="1dp"
                 app:eventCornerRadius="4dp"
                 app:eventTextColor="@android:color/white"
@@ -89,8 +88,6 @@
                 app:timeColumnTextSize="12sp"
                 app:todayHeaderTextColor="@color/accent" />
         </FrameLayout>
-
-
-    </ScrollView>
+    </com.alamkanak.weekview.sample.CustomSV>
 
 </LinearLayout>

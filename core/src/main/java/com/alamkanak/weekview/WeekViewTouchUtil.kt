@@ -84,15 +84,14 @@ internal class WeekViewTouchUtil(
                 val sectionHeight: Float = config.hourHeight / sections_per_hour
                 val pixelsFromMidnight = touchY - config.currentOrigin.y - config.headerHeight
                 val hour = (pixelsFromMidnight / hourHeight).toInt()
-                Log.e("DATTMHR", hour.toString())
+
                 val hour_pixel_from_midnight = hour * hourHeight
-                Log.e("RNDX_HOUR_PX", "pixelsFromMidnight = " + pixelsFromMidnight + " || hourHeight = " + hourHeight + " || hour_px = " + pixelsFromMidnight + hourHeight);
-                val pixelsFromFullHour = pixelsFromMidnight - hour * hourHeight
+                val pixelsFromFullHour = pixelsFromMidnight - hour_pixel_from_midnight
+                Log.e("HOUR_NO", hour.toString())
+                Log.e("HOUR_PX_DT", "pixelsFromMidnight = " + pixelsFromMidnight + " || hourHeight = " + hourHeight + " || hour_px = " + hour_pixel_from_midnight);
                 Log.e("PFFH", "$pixelsFromFullHour")
                 val current_section_no: Int = (pixelsFromFullHour / sectionHeight).toInt() + 1
-                val current_section_top_y = hour_pixel_from_midnight + (current_section_no * sectionHeight)
-                Log.e("current_section", "$current_section_no")
-                Log.e("current_section_top_y", "$current_section_top_y")
+                Log.e("CURRENT_SECTON_NO", current_section_no.toString());
                 val current_section_top_y_FromMidNight = hour_pixel_from_midnight + (current_section_no * sectionHeight) - sectionHeight
                 val snapped_pixel: Float
                 if (snapToTop)
@@ -106,7 +105,6 @@ internal class WeekViewTouchUtil(
                 else
                     minutes = current_section_minutes
                 Log.e("QUARTER_M", "$minutes");
-                Log.e("PixeslsDT", "${day.withTime(config.minHour + hour, minutes)}")
                 Log.e("Pixels", "$start || $snapped_pixel")
 
                 val cal: Calendar = Calendar.getInstance()
@@ -124,7 +122,7 @@ internal class WeekViewTouchUtil(
                 val formatted: String = format1.format(cal.time)
                 Log.e("DATTM", formatted)
 
-                return PointCalendarWrapper(cal, start, snapped_pixel, width.toInt())
+                return PointCalendarWrapper(cal, start, snapped_pixel+ config.currentOrigin.y +config.headerHeight, width.toInt())
 
             }
 
