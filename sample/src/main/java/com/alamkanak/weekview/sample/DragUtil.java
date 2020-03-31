@@ -61,7 +61,6 @@ public class DragUtil {
             public boolean onTouch(View v, MotionEvent event) {
                 last_touch_x = event.getX();
                 last_touch_y = event.getY();
-                Log.e("QQRA", "TOUCH = " + last_touch_x + " || " + last_touch_y);
                 return false;
             }
         });
@@ -98,6 +97,13 @@ public class DragUtil {
 
     }
 
+    public void removeDragView() {
+        if (dragView != null) {
+            drag_container.removeView(dragView);
+
+        }
+    }
+
 
     public long getMinutesFromBeginning(Calendar calendar) {
         ZonedDateTime zdt = DateTimeUtils.toZonedDateTime(calendar);
@@ -109,10 +115,7 @@ public class DragUtil {
     }
 
     public void create(float x, float y, int width, int height) {
-        if (dragView != null) {
-            drag_container.removeView(dragView);
-
-        }
+        removeDragView();
         dragView = (ConstraintLayout) LayoutInflater.from(context).inflate(R.layout.item_drag, null);
 
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);

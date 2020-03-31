@@ -1,8 +1,5 @@
 package com.alamkanak.weekview
 
-import android.graphics.PointF
-import android.util.Log
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.ceil
 import kotlin.math.max
@@ -124,13 +121,7 @@ internal class WeekViewTouchUtil(
                 cal.set(Calendar.HOUR_OF_DAY, config.minHour + hour)
                 cal.set(Calendar.MINUTE, 0)
 
-
                 cal.add(Calendar.MINUTE, minutes)
-                cal.add(Calendar.DAY_OF_YEAR, 1)
-
-                val format1 = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-
-                val formatted: String = format1.format(cal.time)
 
                 return PointCalendarWrapper(cal, start, snapped_pixel + config.currentOrigin.y + config.headerHeight, totalDayWidth.toInt())
 

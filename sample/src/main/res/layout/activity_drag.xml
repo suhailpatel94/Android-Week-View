@@ -70,7 +70,7 @@
                 app:horizontalScrollingEnabled="false"
                 app:hourHeight="60dp"
 
-                app:numberOfVisibleDays="7"
+                app:numberOfVisibleDays="5"
                 app:overlappingEventGap="4dp"
 
                 app:timeColumnBackgroundColor="#ffffffff"
