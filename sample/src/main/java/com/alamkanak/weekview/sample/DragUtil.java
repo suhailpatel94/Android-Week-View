@@ -7,6 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -21,6 +23,9 @@ import com.alamkanak.weekview.PointCalendarWrapper;
 import com.alamkanak.weekview.WeekView;
 
 import org.jetbrains.annotations.NotNull;
+import org.threeten.bp.DateTimeUtils;
+import org.threeten.bp.ZonedDateTime;
+import org.threeten.bp.temporal.ChronoUnit;
 
 import java.util.Calendar;
 
@@ -66,11 +71,24 @@ public class DragUtil {
             public void onEmptyViewLongClick(@NotNull Calendar calendar) {
                 Log.e("QQAA", "LONGCLICK");
                 PointCalendarWrapper drag_view_top = mWeekView.getSnappedPixel(last_touch_x, last_touch_y, true);
+
+
 //                PointCalendarWrapper drag_view_bottom = mWeekView.getSnappedPixel(last_touch_x, last_touch_y, false);
                 if (drag_view_top != null) {
-                    Log.e("DRAGDD", "LX = " + last_touch_x + " || LY = " + last_touch_y);
                     Log.e("DRAGDD", "W = " + drag_view_top.getWidth() + " || X = " + drag_view_top.getX() + " || Y=" + drag_view_top.getY());
-                    create(drag_view_top.getX(), drag_view_top.getY(), drag_view_top.getWidth(), 100);
+
+                    long minutesintoday = getMinutesFromBeginning(drag_view_top.getCalendar());
+                    Float bottom_y;
+                    if (minutesintoday < 1410) {
+                        bottom_y = mWeekView.getYPixelFromMinutes(minutesintoday + 30);
+                        create(drag_view_top.getX(), drag_view_top.getY(), drag_view_top.getWidth(), (int) (bottom_y - drag_view_top.getY()));
+                    } else {
+                        Float top_y = mWeekView.getYPixelFromMinutes(1410);
+                        bottom_y = mWeekView.getYPixelFromMinutes(1440);
+                        create(drag_view_top.getX(), top_y, drag_view_top.getWidth(), (int) (bottom_y - top_y));
+                    }
+
+
                 }
 
 
@@ -78,6 +96,16 @@ public class DragUtil {
         });
 
 
+    }
+
+
+    public long getMinutesFromBeginning(Calendar calendar) {
+        ZonedDateTime zdt = DateTimeUtils.toZonedDateTime(calendar);
+        long minutesintoday = ChronoUnit.MINUTES.between(zdt.toLocalDate().atStartOfDay(), zdt);
+
+        Log.e("DRAGDD_MINUTES", String.valueOf(minutesintoday));
+        Log.e("DRAGDD_Y_FROM_MIN", String.valueOf(mWeekView.getYPixelFromMinutes(minutesintoday)));
+        return minutesintoday;
     }
 
     public void create(float x, float y, int width, int height) {
@@ -93,7 +121,7 @@ public class DragUtil {
         dragView.setY(y);
 
         drag_container.addView(dragView);
-
+        vibrate();
         onDragUpdate();
 //            dragView.setOnTouchListener(MyTouchListener);
 
@@ -225,6 +253,7 @@ public class DragUtil {
             switch (event.getAction()) {
 
                 case DragEvent.ACTION_DRAG_STARTED:
+                    vibrate();
                     return true;
 
                 case DragEvent.ACTION_DRAG_LOCATION:
@@ -233,7 +262,7 @@ public class DragUtil {
                         int new_topY = (int) event.getY() - (getDragView().getHeight() / 2);
                         int new_bottomY = new_topY + getDragView().getHeight();
 
-                        if (new_topY < 0) {
+                        if (new_topY < mWeekView.getTopLimit()) {
                             return true;
                         }
 
@@ -304,7 +333,7 @@ public class DragUtil {
             new_bottom_y = new_top_y + new_height;
         }
 
-        if (new_top_y >= 0 && new_bottom_y <= drag_container.getHeight())
+        if (new_top_y >= mWeekView.getTopLimit() && new_bottom_y <= drag_container.getHeight())
             isValid = true;
 
         if (isValid) {
@@ -333,6 +362,17 @@ public class DragUtil {
 
         if (dragCompleted != null) {
             dragCompleted.onDragCompleted(start, end);
+        }
+    }
+
+    public void vibrate() {
+        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(500);
         }
     }
 

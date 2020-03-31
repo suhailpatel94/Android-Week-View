@@ -10,6 +10,7 @@ import com.alamkanak.weekview.sample.R
 private enum class WeekViewType(val value: Int) {
     DayView(1),
     ThreeDayView(3),
+    FiveDayView(5),
     WeekView(7);
 
     companion object {

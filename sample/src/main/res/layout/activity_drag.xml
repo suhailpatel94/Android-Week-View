@@ -11,7 +11,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/previousWeekButton"
@@ -59,8 +60,8 @@
                 android:id="@+id/weekView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:columnGap="1dp"
-                app:eventCornerRadius="4dp"
+                app:columnGap="8dp"
+                app:eventCornerRadius="2dp"
                 app:eventTextColor="@android:color/white"
                 app:firstDayOfWeek="monday"
                 app:headerRowBottomLineColor="@color/header_bottom_line"
@@ -68,22 +69,13 @@
                 app:headerRowPadding="12dp"
                 app:horizontalScrollingEnabled="false"
                 app:hourHeight="60dp"
-                app:nowLineColor="@color/accent"
-                app:nowLineDotColor="@color/accent"
-                app:nowLineDotRadius="5dp"
-                app:nowLineStrokeWidth="1dp"
+
                 app:numberOfVisibleDays="7"
-                app:overlappingEventGap="1dp"
-                app:showFirstDayOfWeekFirst="true"
-                app:showHeaderRowBottomLine="true"
-                app:showNowLine="true"
-                app:showNowLineDot="true"
-                app:showTimeColumnSeparator="true"
-                app:singleDayHorizontalMargin="8dp"
+                app:overlappingEventGap="4dp"
+
                 app:timeColumnBackgroundColor="#ffffffff"
                 app:timeColumnPadding="8dp"
-                app:timeColumnSeparatorColor="@color/header_bottom_line"
-                app:timeColumnSeparatorStrokeWidth="1dp"
+
                 app:timeColumnTextColor="@color/toolbar_text"
                 app:timeColumnTextSize="12sp"
                 app:todayHeaderTextColor="@color/accent" />

@@ -1348,6 +1348,13 @@ class WeekView<T : Any> @JvmOverloads constructor(
         return accessibilityTouchHelper.touchUtil.getSnappedPixel(x, y, snap_to_top)
     }
 
+    fun getTopLimit(): Float {
+        return accessibilityTouchHelper.touchUtil.getTopLimit()
+    }
+    fun getYPixelFromMinutes(touch_minutes:Long): Float {
+        return accessibilityTouchHelper.touchUtil.getYPixelFromMinutes(touch_minutes)
+    }
+
     fun calculateTimeFromPoint(x: Float, y: Float): Calendar? {
         return accessibilityTouchHelper.touchUtil.calculateTimeFromPoint(x, y)
     }

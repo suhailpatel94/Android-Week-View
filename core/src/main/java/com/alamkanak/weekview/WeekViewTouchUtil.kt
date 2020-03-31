@@ -1,5 +1,6 @@
 package com.alamkanak.weekview
 
+import android.graphics.PointF
 import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.*
@@ -51,6 +52,19 @@ internal class WeekViewTouchUtil(
         return null
     }
 
+    fun getTopLimit(): Float {
+        return config.currentOrigin.y + config.headerHeight
+    }
+
+    fun getYPixelFromMinutes(
+            touch_minutes: Long
+    ): Float {
+
+        val minHeightpx = config.hourHeight / 60
+        val tounMinPx = minHeightpx * touch_minutes
+
+        return tounMinPx + config.currentOrigin.y + config.headerHeight
+    }
 
     fun getSnappedPixel(
             touchX: Float,
@@ -68,6 +82,7 @@ internal class WeekViewTouchUtil(
         val firstDay = daysFromOrigin + 1
         val lastDay = firstDay + config.numberOfVisibleDays
 
+
         for (dayNumber in firstDay..lastDay) {
             val start = max(startPixel, timeColumnWidth)
             val end = startPixel + totalDayWidth
@@ -77,6 +92,7 @@ internal class WeekViewTouchUtil(
             val isWithinDay = touchX in start..end
 
             if (isVisibleHorizontally && isWithinDay) {
+
                 val day = now() + Days(dayNumber - 1)
                 val sections_per_hour = 4
                 val minutes_per_section: Int = 60 / sections_per_hour;
@@ -87,11 +103,7 @@ internal class WeekViewTouchUtil(
 
                 val hour_pixel_from_midnight = hour * hourHeight
                 val pixelsFromFullHour = pixelsFromMidnight - hour_pixel_from_midnight
-                Log.e("HOUR_NO", hour.toString())
-                Log.e("HOUR_PX_DT", "pixelsFromMidnight = " + pixelsFromMidnight + " || hourHeight = " + hourHeight + " || hour_px = " + hour_pixel_from_midnight);
-                Log.e("PFFH", "$pixelsFromFullHour")
                 val current_section_no: Int = (pixelsFromFullHour / sectionHeight).toInt() + 1
-                Log.e("CURRENT_SECTON_NO", current_section_no.toString());
                 val current_section_top_y_FromMidNight = hour_pixel_from_midnight + (current_section_no * sectionHeight) - sectionHeight
                 val snapped_pixel: Float
                 if (snapToTop)
@@ -104,8 +116,6 @@ internal class WeekViewTouchUtil(
                     minutes = current_section_minutes - minutes_per_section
                 else
                     minutes = current_section_minutes
-                Log.e("QUARTER_M", "$minutes");
-                Log.e("Pixels", "$start || $snapped_pixel")
 
                 val cal: Calendar = Calendar.getInstance()
                 cal.timeInMillis = day.timeInMillis
@@ -114,15 +124,15 @@ internal class WeekViewTouchUtil(
                 cal.set(Calendar.HOUR_OF_DAY, config.minHour + hour)
                 cal.set(Calendar.MINUTE, 0)
 
+
                 cal.add(Calendar.MINUTE, minutes)
-                Log.e("PixeslsDT", "$cal")
+                cal.add(Calendar.DAY_OF_YEAR, 1)
 
                 val format1 = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
                 val formatted: String = format1.format(cal.time)
-                Log.e("DATTM", formatted)
 
-                return PointCalendarWrapper(cal, start, snapped_pixel+ config.currentOrigin.y +config.headerHeight, width.toInt())
+                return PointCalendarWrapper(cal, start, snapped_pixel + config.currentOrigin.y + config.headerHeight, totalDayWidth.toInt())
 
             }
 
