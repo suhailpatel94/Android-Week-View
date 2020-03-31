@@ -345,10 +345,6 @@ internal class WeekViewGestureHandler<T : Any>(
         scaleDetector.onTouchEvent(event)
         val value = gestureDetector.onTouchEvent(event)
 
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm")
-        val tu = WeekViewTouchUtil(config)
-        Log.e("QQA_CTFP", sdf.format(touchHandler.calculateTimeFromPoint(event.x, event.y)?.time))
-        Log.e("QQA_GSP", sdf.format(tu.getSnappedPixel(event.x, event.y, true)?.calendar?.time))
         // Check after call of gestureDetector, so currentFlingDirection and currentScrollDirection
         // are set
         if (event.action == ACTION_UP && !isZooming && currentFlingDirection == NONE) {

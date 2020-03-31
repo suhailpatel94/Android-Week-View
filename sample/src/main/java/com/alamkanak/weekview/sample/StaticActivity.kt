@@ -92,7 +92,7 @@ class StaticActivity : AppCompatActivity(), OnEventClickListener<Event>,
         val sdf = SimpleDateFormat.getDateTimeInstance()
         weekView.getSnappedPixel(last_touch_x, last_touch_y, true)
         weekView.calculateTimeFromPoint(last_touch_x, last_touch_y)
-        Log.e("TOUCHPX", "$last_touch_x || $last_touch_y")
+
         showToast("Empty view long-clicked at ${sdf.format(time.time)}")
     }
 
